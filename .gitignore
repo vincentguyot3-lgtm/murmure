@@ -1,0 +1,17 @@
+# Produits de compilation
+.build/
+*.xcodeproj
+*.xcworkspace
+dist/
+
+# macOS
+.DS_Store
+
+# Worktrees des sessions parallèles
+.claude/worktrees/
+
+# Clés et données personnelles : elles vivent dans ~/Library/Application Support/Murmure/, jamais ici.
+secrets.json
+historique*.json
+.env
+.env.*

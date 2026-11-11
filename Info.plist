@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleIdentifier</key>
+    <string>com.vincentguyot.murmure</string>
+    <key>CFBundleName</key>
+    <string>Murmure</string>
+    <key>CFBundleDisplayName</key>
+    <string>Murmure</string>
+    <key>CFBundleExecutable</key>
+    <string>Murmure</string>
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+    <key>CFBundleShortVersionString</key>
+    <string>0.2</string>
+    <key>CFBundleVersion</key>
+    <string>1</string>
+    <key>LSMinimumSystemVersion</key>
+    <string>26.0</string>
+    <key>CFBundleIconFile</key>
+    <string>AppIcon</string>
+    <key>NSHumanReadableCopyright</key>
+    <string>Usage personnel · transcription 100 % locale</string>
+    <key>NSAudioCaptureUsageDescription</key>
+    <string>Pendant une réunion, Murmure enregistre le son diffusé par ce Mac (participants d'une visio) et le transcrit localement.</string>
+    <key>NSCalendarsFullAccessUsageDescription</key>
+    <string>Murmure lit les agendas du Mac (Outlook, Google, iCloud…) pour montrer vos rendez-vous du jour, nommer une réunion d'après le rendez-vous en cours et préparer l'e-mail du compte rendu. Rien ne quitte ce Mac.</string>
+    <key>NSRemindersFullAccessUsageDescription</key>
+    <string>« Créer les actions dans Rappels » transforme les actions d'un compte rendu en rappels, dans votre liste par défaut. Rien d'autre n'est lu ni écrit.</string>
+    <key>NSAppleEventsUsageDescription</key>
+    <string>« Envoyer dans Notes » crée une note dans l'application Notes avec la synthèse et la transcription de la fiche.</string>
+    <key>NSContactsUsageDescription</key>
+    <string>Murmure lit les noms et sociétés de vos contacts pour les écrire correctement quand vous les dictez. Seuls les quelques noms qui ressemblent à ce que vous venez de dire accompagnent la dictée relue par Claude.</string>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>Murmure écoute le micro pendant que vous maintenez la touche de dictée, et transcrit votre voix localement sur ce Mac.</string>
+</dict>
+</plist>

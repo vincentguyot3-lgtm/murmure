@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "murmure": {
+      "command": "${HOME}/Applications/Murmure.app/Contents/MacOS/Murmure",
+      "args": ["--mcp"]
+    }
+  }
+}

@@ -6,9 +6,12 @@ ce que fait l'app ; ce fichier décrit comment on travaille dessus. Plusieurs se
 
 ## Git : une livraison = un commit
 
-- Le projet est sous git, branche `main`. Il se partage par un dépôt GitHub **privé** (distant `origin` ; s'il
-  n'existe pas encore, c'est à l'utilisateur de le faire créer). N'y pousse que `main`, et seulement quand
-  l'utilisateur le demande : pousser, c'est montrer le code aux personnes invitées.
+- Le projet est sous git, branche `main`. Il se partage par un dépôt GitHub **public** (distant `origin`,
+  `github.com/vincentguyot3-lgtm/murmure`). N'y pousse que `main`, et seulement quand l'utilisateur le
+  demande : pousser, c'est publier, à la vue de tous et sans retour en arrière.
+- **Rien de personnel dans ce qui est publié** : les commits portent l'adresse anonyme de GitHub (réglée dans
+  ce dépôt, `git config user.email` ; ne la remplace pas par une adresse réelle), et ni le code, ni les
+  exemples, ni les messages de commit ne citent de client, de dossier ou d'adresse.
 - **L'historique d'avant le 11/11/2026 ne sort jamais de ce Mac.** `main` est reparti ce jour-là d'un commit
   unique (« état initial du dépôt partagé ») ; les 136 livraisons antérieures, dont d'anciens commits citent des
   noms réels, sont dans la branche locale `archive/avant-publication`. Ne pousse ni cette branche ni les

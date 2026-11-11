@@ -40,8 +40,10 @@ Si vous comptez modifier Murmure, voyez plutôt « Installer à partir du code �
 
 ## 3. Premier lancement
 
-Murmure vous accueille et se règle avec vous : prénom, métier, ce que vous en attendez, test du micro, touche
-de dictée. Il demande alors quelques autorisations à macOS. Chacune est demandée une seule fois.
+Murmure vous accueille et se règle avec vous, en huit écrans : votre prénom, votre métier, ce que vous en
+attendez, les autorisations, un test du micro, la touche de dictée, puis les deux services en ligne
+facultatifs, où vous pouvez coller vos clés (section 4). Tout se refait plus tard depuis Réglages › Général.
+Murmure demande au passage quelques autorisations à macOS. Chacune est demandée une seule fois.
 
 | Autorisation | À quoi elle sert | Indispensable ? |
 |---|---|---|
@@ -63,6 +65,10 @@ relâchez. Le texte est collé.
 Sans aucune clé, Murmure fonctionne entièrement : dictée, réunions, comptes rendus, tout se fait sur votre
 Mac, gratuitement. Deux services en ligne, en option, le rendent plus fin. Chacun demande une **clé**.
 
+L'accueil du premier lancement vous les propose à l'écran « En ligne, si vous voulez » : un bouton ouvre le
+site du service, vous y créez la clé, vous la collez dans Murmure et cliquez sur « Vérifier ». Vous pouvez
+aussi passer cet écran et y revenir plus tard dans les Réglages, comme décrit ci-dessous.
+
 **Une clé est un mot de passe personnel** qui relie un service à votre compte, et donc à votre facture. Celle
 de la personne qui vous a transmis Murmure n'est pas dans ce que vous avez téléchargé : elle n'a jamais été
 dans le code. La vôtre ne quitte pas votre Mac (elle est rangée dans le dossier de données de Murmure, lisible
@@ -78,8 +84,9 @@ rédigés par le modèle le plus puissant. Seul du **texte** part chez Anthropic
 2. Dans la rubrique de facturation (« Billing »), ajoutez un moyen de paiement et quelques euros de crédit.
 3. Dans « API Keys », créez une clé. Elle commence par `sk-ant-`. Copiez-la tout de suite : elle n'est montrée
    qu'une fois.
-4. Dans Murmure : **Réglages › Transcription › Mise en forme**, choisissez « Claude, en ligne (le plus
-   puissant) », ouvrez la sous-page **Claude**, collez la clé, cliquez sur **Vérifier**.
+4. Collez-la dans l'écran d'accueil de Murmure et cliquez sur **Vérifier**. Plus tard : **Réglages ›
+   Transcription › Mise en forme**, choisissez « Claude, en ligne (le plus puissant) », ouvrez la sous-page
+   **Claude**, collez la clé.
 
 Coût, facturé à l'usage par Anthropic : de l'ordre d'un dixième de centime par dictée relue, quelques
 centimes à quelques dizaines de centimes par compte rendu de réunion selon sa longueur.
@@ -91,8 +98,8 @@ précisément que sur le Mac, puis supprimé chez le service dès la transcripti
 
 1. Allez sur [assemblyai.com](https://www.assemblyai.com) et créez un compte.
 2. Dans « API Keys », copiez votre clé.
-3. Dans Murmure : **Réglages › Transcription › Réunions › Transcription des réunions**, choisissez « En ligne,
-   plus précise », collez la clé, cliquez sur **Vérifier**.
+3. Collez-la dans l'écran d'accueil de Murmure et cliquez sur **Vérifier**. Plus tard : **Réglages ›
+   Transcription › Réunions › Transcription des réunions**, choisissez « En ligne, plus précise », collez la clé.
 
 Coût, facturé à l'usage par AssemblyAI : environ 0,30 $ par heure de réunion.
 

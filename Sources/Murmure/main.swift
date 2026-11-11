@@ -129,12 +129,25 @@ if CommandLine.arguments.count == 3, CommandLine.arguments[1] == "--apercu-regla
     exit(0)
 }
 
+// Mise en service d'une clé comme le fait l'écran « En ligne » de l'accueil, sans interface :
+// `Murmure --essai-cles claude|transcription clé`. Dit si la clé est acceptée et ce qui reste enregistré.
+// À lancer avec MURMURE_SUPPORT_DIR (coffre à part) et un serveur d'essai (MURMURE_CLAUDE_URL avec
+// tools/faux-claude.py, MURMURE_TRANSCRIPTION_URL avec tools/faux-transcription.py). Ne change aucun réglage.
+if CommandLine.arguments.count == 4, CommandLine.arguments[1] == "--essai-cles" {
+    let service = CommandLine.arguments[2], key = CommandLine.arguments[3]
+    runBlocking {
+        let result = service == "claude" ? await KeySetup.tryClaude(key) : await KeySetup.tryTranscription(key)
+        let stored = service == "claude" ? Coffre.get("claude") : Coffre.get("transcription")
+        print("\(result.ok ? "acceptée" : "refusée") · \(result.message) · clé enregistrée : \(stored == nil ? "aucune" : (stored == key ? "celle-ci" : "la précédente"))")
+    }
+}
+
 // Aperçu de la personnalisation du premier lancement : `Murmure --apercu-bienvenue préfixe` → une image par écran
-// (préfixe-1.png… préfixe-7.png), en clair et en sombre, avec des choix d'exemple. Ne lit ni n'écrit aucun réglage.
+// (préfixe-1.png… préfixe-8.png), en clair et en sombre, avec des choix d'exemple. Ne lit ni n'écrit aucun réglage.
 if CommandLine.arguments.count == 3, CommandLine.arguments[1] == "--apercu-bienvenue" {
     MainActor.assumeIsolated {
         StaticPreview.active = true
-        for step in 0..<7 {
+        for step in 0..<Onboarding.steps {
             for (suffix, scheme) in [("", ColorScheme.light), ("-sombre", .dark)] {
                 let view = Onboarding(previewStep: step)
                     .frame(width: 1200, height: 760)

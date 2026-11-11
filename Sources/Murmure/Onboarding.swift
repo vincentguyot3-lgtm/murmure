@@ -2,7 +2,8 @@ import AVFoundation
 import SwiftUI
 
 /// Accueil du premier lancement, qui personnalise Murmure : prénom, métier et domaines, attentes,
-/// autorisations, test du micro, raccourci, puis une carte qui résume ce qui a été réglé.
+/// autorisations, test du micro, raccourci, services en ligne facultatifs (les clés s'y collent et s'y
+/// vérifient), puis une carte qui résume ce qui a été réglé.
 /// Les choix ne sont pas décoratifs : voir `Profile.swift` pour ce que chacun change.
 struct Onboarding: View {
     let finish: () -> Void
@@ -23,9 +24,14 @@ struct Onboarding: View {
     @State private var goals: Set<Goal>
     /// Ce que la personnalisation a réglé, pour la carte de fin.
     @State private var done: [String]
+    /// Écran « En ligne » : clé en cours de saisie et état de chaque service.
+    @State private var claudeDraft = ""
+    @State private var onlineDraft = ""
+    @State private var claudeStatus: KeySetup.Status
+    @State private var onlineStatus: KeySetup.Status
     @FocusState private var nameFocused: Bool
 
-    private static let steps = 7
+    static let steps = 8
 
     init(finish: @escaping () -> Void) {
         self.finish = finish
@@ -34,6 +40,11 @@ struct Onboarding: View {
         _domains = State(initialValue: Set(Settings.domains))
         _goals = State(initialValue: Settings.goals)
         _done = State(initialValue: [])
+        // Personnalisation refaite : un service déjà réglé s'affiche comme tel.
+        _claudeStatus = State(initialValue: ClaudeAPI.hasKey && Cleaner.chosen == .claude
+                              ? .valid("Clé enregistrée : Claude relit vos dictées et rédige vos comptes rendus.") : .idle)
+        _onlineStatus = State(initialValue: OnlineTranscription.hasKey && OnlineTranscription.isChosen
+                              ? .valid("Clé enregistrée : vos réunions sont transcrites en ligne.") : .idle)
     }
 
     /// Aperçu d'un écran, avec des choix d'exemple (`--apercu-bienvenue`), sans rien lire ni écrire des réglages.
@@ -48,7 +59,11 @@ struct Onboarding: View {
             "Texte collé là où se trouve votre curseur, accordé à ce qui l'entoure",
             "Appels, visios et rendez-vous repérés : Murmure propose de les enregistrer, participants compris",
             "Chaque réunion se termine par un compte rendu de rendez-vous client",
+            "Tout se fait sur ce Mac : rien ne part en ligne",
         ])
+        // Les deux cartes avec leur champ : le cas le plus haut de l'écran « En ligne ».
+        _claudeStatus = State(initialValue: .idle)
+        _onlineStatus = State(initialValue: .idle)
     }
 
     var body: some View {
@@ -84,6 +99,7 @@ struct Onboarding: View {
         case 3: permissions
         case 4: microphone
         case 5: shortcut
+        case 6: online
         default: ready
         }
     }
@@ -323,6 +339,74 @@ struct Onboarding: View {
         .onAppear { if baseline == nil { baseline = store.recordings.count } }
     }
 
+    private var online: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            heading("En ligne, si vous voulez", "Deux services facultatifs",
+                    "Murmure fait déjà tout sur ce Mac. Ces deux services le rendent plus fin. Chacun demande une clé : un mot de passe personnel, qui relie Murmure à votre compte chez le service, et donc à votre facture.")
+            ServiceKeyCard(symbol: "text.badge.checkmark", title: "Claude relit et rédige",
+                           detail: "Dictées relues avec leur contexte, comptes rendus rédigés par Claude. Seul du texte part, jamais le son. Environ un dixième de centime par dictée.",
+                           steps: "Sur la Console Anthropic : créez un compte, ajoutez un crédit, puis créez une clé. Un abonnement Claude ne donne pas de clé.",
+                           linkLabel: "Ouvrir la Console", link: KeySetup.claudeSite, placeholder: "sk-ant-…",
+                           draft: $claudeDraft, status: claudeStatus, verify: verifyClaude, remove: removeClaude)
+                .staggered(3)
+            ServiceKeyCard(symbol: "waveform", title: "Réunions transcrites en ligne",
+                           detail: "Le son des réunions est transcrit plus précisément par \(OnlineTranscription.serviceName), sur un serveur européen, puis supprimé. Les dictées restent sur ce Mac. Environ 0,30 $ par heure.",
+                           steps: "Sur assemblyai.com : créez un compte, puis copiez la clé de la rubrique API Keys.",
+                           linkLabel: "Ouvrir le site", link: KeySetup.transcriptionSite, placeholder: "Clé",
+                           draft: $onlineDraft, status: onlineStatus, verify: verifyOnline, remove: removeOnline)
+                .staggered(4)
+            Text("Rien d'obligatoire : « Continuer » garde tout sur ce Mac. À retrouver dans Réglages › Transcription.")
+                .font(.ui(12))
+                .foregroundStyle(Theme.muted)
+                .fixedSize(horizontal: false, vertical: true)
+                .staggered(5)
+        }
+    }
+
+    private func verifyClaude() {
+        let draft = claudeDraft
+        claudeStatus = .checking
+        Task {
+            let result = await KeySetup.tryClaude(draft)
+            await MainActor.run {
+                if result.ok {
+                    claudeDraft = ""
+                    Settings.cleanupEngine = Cleaner.Engine.claude.rawValue
+                    AppDelegate.startLocalLLM()
+                }
+                claudeStatus = result.ok ? .valid(result.message) : .failed(result.message)
+            }
+        }
+    }
+
+    private func removeClaude() {
+        ClaudeAPI.setKey("")
+        Settings.cleanupEngine = Cleaner.Engine.local.rawValue
+        AppDelegate.startLocalLLM()
+        claudeStatus = .idle
+    }
+
+    private func verifyOnline() {
+        let draft = onlineDraft
+        onlineStatus = .checking
+        Task {
+            let result = await KeySetup.tryTranscription(draft)
+            await MainActor.run {
+                if result.ok {
+                    onlineDraft = ""
+                    Settings.meetingTranscription = "online"
+                }
+                onlineStatus = result.ok ? .valid(result.message) : .failed(result.message)
+            }
+        }
+    }
+
+    private func removeOnline() {
+        OnlineTranscription.setKey("")
+        Settings.meetingTranscription = "local"
+        onlineStatus = .idle
+    }
+
     private var ready: some View {
         let name = userName.trimmingCharacters(in: .whitespaces)
         let chosen = profession ?? .avocat
@@ -378,6 +462,11 @@ struct Onboarding: View {
         Settings.domains = (profession ?? .avocat).domains.filter(domains.contains)
         Settings.goals = goals
         done = UserProfile.applyChoices()
+        // Où se fait le travail : dit sur la carte de fin, qu'une clé ait été collée ou non.
+        let claude = claudeStatus.isValid, transcription = onlineStatus.isValid
+        if claude { done.append("Dictées relues et comptes rendus rédigés par Claude, en ligne") }
+        if transcription { done.append("Réunions transcrites en ligne, sur un serveur européen") }
+        if !claude, !transcription { done.append("Tout se fait sur ce Mac : rien ne part en ligne") }
     }
 
     /// Sans micro ou sans accessibilité, on prévient avant de fermer l'accueil : la dictée ne marcherait pas, ou copierait seulement.
@@ -446,6 +535,138 @@ private struct Staggered: ViewModifier {
 
 private extension View {
     func staggered(_ order: Int) -> some View { modifier(Staggered(order: order)) }
+}
+
+/// Mise en service d'une clé depuis l'accueil : enregistrée, vérifiée auprès du service, et retirée si elle est
+/// refusée (la clé d'avant, s'il y en avait une, est remise). Ne touche pas aux réglages : l'écran le fait
+/// quand la clé est valide. Essai sans interface : `Murmure --essai-cles claude|transcription clé`.
+enum KeySetup {
+    enum Status: Equatable {
+        case idle, checking
+        case valid(String)
+        case failed(String)
+
+        var isValid: Bool { if case .valid = self { return true } else { return false } }
+    }
+
+    static let claudeSite = URL(string: "https://console.anthropic.com/settings/keys")!
+    static let transcriptionSite = URL(string: "https://www.assemblyai.com/dashboard/api-keys")!
+
+    static func tryClaude(_ draft: String) async -> (ok: Bool, message: String) {
+        let key = draft.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !key.isEmpty else { return (false, "Collez d'abord la clé.") }
+        let previous = ClaudeAPI.key ?? ""
+        ClaudeAPI.setKey(key)
+        do {
+            let model = try await ClaudeAPI.shared.verify()
+            return (true, "Clé valide : \(model) a répondu. Claude relira vos dictées et rédigera vos comptes rendus.")
+        } catch ClaudeAPI.ClaudeError.badKey {
+            ClaudeAPI.setKey(previous)
+            return (false, "Clé refusée par Anthropic : vérifiez qu'elle est copiée en entier.")
+        } catch {
+            ClaudeAPI.setKey(previous)
+            return (false, error.localizedDescription.capitalizedFirst)
+        }
+    }
+
+    static func tryTranscription(_ draft: String) async -> (ok: Bool, message: String) {
+        let key = draft.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !key.isEmpty else { return (false, "Collez d'abord la clé.") }
+        let previous = OnlineTranscription.key ?? ""
+        OnlineTranscription.setKey(key)
+        let message = await OnlineTranscription.verify()
+        guard message == OnlineTranscription.validMessage else {
+            OnlineTranscription.setKey(previous)
+            return (false, message)
+        }
+        return (true, "Clé valide : vos réunions seront transcrites en ligne.")
+    }
+}
+
+/// Carte d'un service en ligne de l'accueil : ce qu'il apporte, comment obtenir la clé, où la coller.
+private struct ServiceKeyCard: View {
+    let symbol: String
+    let title: String
+    let detail: String
+    let steps: String
+    let linkLabel: String
+    let link: URL
+    let placeholder: String
+    @Binding var draft: String
+    let status: KeySetup.Status
+    let verify: () -> Void
+    let remove: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(alignment: .top, spacing: 12) {
+                Image(systemName: symbol)
+                    .font(.ui(15))
+                    .frame(width: 20)
+                    .padding(.top, 1)
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(title).font(.ui(14, weight: .medium))
+                    Text(detail)
+                        .font(.ui(12))
+                        .foregroundStyle(Theme.muted)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                Spacer(minLength: 0)
+            }
+            if case .valid(let message) = status {
+                HStack(spacing: 8) {
+                    Image(systemName: "checkmark.circle.fill").font(.ui(13))
+                    Text(message)
+                        .font(.ui(12, weight: .medium))
+                        .fixedSize(horizontal: false, vertical: true)
+                    Spacer(minLength: 0)
+                    Button("Retirer", action: remove).buttonStyle(OutlineButtonStyle())
+                }
+                .padding(.leading, 32)
+            } else {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(steps)
+                        .font(.ui(12))
+                        .fixedSize(horizontal: false, vertical: true)
+                    HStack(spacing: 8) {
+                        Button(linkLabel) { NSWorkspace.shared.open(link) }
+                            .buttonStyle(OutlineButtonStyle())
+                        Group {
+                            if StaticPreview.active {
+                                Text(placeholder).foregroundStyle(Theme.muted).frame(maxWidth: .infinity, alignment: .leading)
+                            } else {
+                                SecureField(placeholder, text: $draft)
+                                    .textFieldStyle(.plain)
+                                    .onSubmit(verify)
+                            }
+                        }
+                        .font(.ui(12))
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 5)
+                        .background(RoundedRectangle(cornerRadius: 7).fill(Theme.bg))
+                        .overlay(RoundedRectangle(cornerRadius: 7).strokeBorder(Theme.line))
+                        if status == .checking {
+                            Spinner(size: 12, color: Theme.muted, lineWidth: 1.4)
+                        }
+                        Button("Vérifier", action: verify)
+                            .buttonStyle(OutlineButtonStyle(prominent: true))
+                            .disabled(status == .checking || draft.trimmingCharacters(in: .whitespaces).isEmpty)
+                    }
+                    if case .failed(let message) = status {
+                        HStack(alignment: .top, spacing: 6) {
+                            Image(systemName: "exclamationmark.triangle").font(.ui(11)).padding(.top, 1)
+                            Text(message).font(.ui(12)).fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
+                }
+                .padding(.leading, 32)
+            }
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(RoundedRectangle(cornerRadius: 12).fill(Theme.soft))
+    }
 }
 
 private struct ProfessionCard: View {

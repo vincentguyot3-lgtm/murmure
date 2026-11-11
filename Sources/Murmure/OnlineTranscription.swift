@@ -89,12 +89,15 @@ enum OnlineTranscription {
         }
     }
 
+    /// Message de `verify` quand le service accepte la clé.
+    static let validMessage = "Clé valide"
+
     /// Vérifie la clé par une demande minuscule (liste d'une transcription) ; renvoie un message à afficher.
     static func verify() async -> String {
         guard let key, !key.isEmpty else { return "Aucune clé" }
         do {
             try await probe(key: key)
-            return "Clé valide"
+            return validMessage
         } catch Failure.badKey {
             return "Clé refusée"
         } catch let failure as Failure {

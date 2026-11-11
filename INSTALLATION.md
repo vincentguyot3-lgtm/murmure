@@ -23,7 +23,8 @@ Murmure n'existe que pour Mac : il n'y a pas de version Windows, Linux, iPhone n
 
 1. **Télécharger.** Sur la page GitHub de Murmure, colonne de droite, cliquez sur **Releases**, puis sur le
    fichier **Murmure.zip** de la publication la plus récente.
-2. **Ranger.** Dans Téléchargements, double-cliquez sur `Murmure.zip` : l'application **Murmure** apparaît.
+2. **Ranger.** Dans Téléchargements, double-cliquez sur `Murmure.zip` : l'application **Murmure** apparaît
+   (Safari décompresse parfois le fichier de lui-même : l'application est alors déjà là, sans le `.zip`).
    Faites-la glisser dans le dossier **Applications**. (Ne la lancez pas depuis Téléchargements.)
 3. **Ouvrir, la première fois.** Double-cliquez sur Murmure. macOS affiche qu'il ne peut pas vérifier
    l'application et refuse de l'ouvrir : cliquez sur **Terminé**. Ouvrez ensuite **Réglages Système ›

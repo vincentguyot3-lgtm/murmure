@@ -6,7 +6,17 @@ ce que fait l'app ; ce fichier décrit comment on travaille dessus. Plusieurs se
 
 ## Git : une livraison = un commit
 
-- Le projet est sous git (branche `main`, dépôt local, pas de distant). Ne jamais pousser.
+- Le projet est sous git, branche `main`. Il se partage par un dépôt GitHub **privé** (distant `origin` ; s'il
+  n'existe pas encore, c'est à l'utilisateur de le faire créer). N'y pousse que `main`, et seulement quand
+  l'utilisateur le demande : pousser, c'est montrer le code aux personnes invitées.
+- **L'historique d'avant le 11/11/2026 ne sort jamais de ce Mac.** `main` est reparti ce jour-là d'un commit
+  unique (« état initial du dépôt partagé ») ; les 136 livraisons antérieures, dont d'anciens commits citent des
+  noms réels, sont dans la branche locale `archive/avant-publication`. Ne pousse ni cette branche ni les
+  anciennes branches de travail (un crochet `pre-push` local le refuse), ne les fusionne pas dans `main`
+  (`--allow-unrelated-histories` y ferait entrer l'ancien historique). Pour reprendre un travail resté sur une
+  ancienne branche : `git rebase --onto main archive/avant-publication <branche>`.
+- **Aucun nom réel dans le dépôt** (clients, parties, confrères, cabinet) : exemples, essais, jeux d'essai et
+  README n'emploient que des noms inventés.
 - **À la fin de chaque livraison** (fonctionnalité, lot, correction qui compile), commiter sans
   qu'on te le demande : `git add -A && git commit`. Message en français, première ligne courte
   (« Export auto : copie Markdown dans le dossier de l'affaire »), puis deux ou trois lignes sur
@@ -46,6 +56,15 @@ ce que fait l'app ; ce fichier décrit comment on travaille dessus. Plusieurs se
   dis-le explicitement à l'utilisateur plutôt que de le présenter comme testé.
 - `historique.json` est gardé en mémoire par l'app : ne l'écris jamais depuis l'extérieur pendant
   qu'elle tourne (ni `--resync`, ni le serveur MCP, qui est en lecture seule pour cette raison).
+
+## Publier une version
+
+- Le destinataire n'installe rien : il télécharge `Murmure.zip` dans les publications (« Releases ») du dépôt
+  GitHub et suit `INSTALLATION.md`. `tools/paquet.sh` fabrique `dist/Murmure.zip` sans toucher à l'application
+  installée ; il doit être signé « Murmure Dev » (le script refuse sinon), pour que les autorisations données
+  par les destinataires survivent aux mises à jour.
+- Publier (pousser `main`, créer une publication, y joindre le paquet) ne se fait que sur demande de
+  l'utilisateur. Garde `INSTALLATION.md` juste : c'est le seul document que lit le destinataire.
 
 ## Style
 
